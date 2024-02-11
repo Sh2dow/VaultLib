@@ -64,5 +64,10 @@ namespace VaultLib.Core.Types
             _srcPtr = bw.BaseStream.Position;
             bw.Write(0);
         }
+
+        public override string ToString()
+        {
+            return string.Join(" | ", Items);
+        }
     }
 }

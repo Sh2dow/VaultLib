@@ -17,6 +17,11 @@ namespace VaultLib.Support.ProStreet.VLT
     [VLTTypeInfo(nameof(FEPartData))]
     public class FEPartData : VLTBaseType, IPointerObject, IReferencesStrings
     {
+        private VLTListContainer<RefSpec> _autoSculptCamera1;
+        private VLTListContainer<RefSpec> _autoSculptCamera2;
+        private VLTListContainer<RefSpec> _autoSculptCamera3;
+        private VLTPointerContainer<FEPartDetail> _partDetails;
+
         public uint HAL_ID { get; set; }
         public uint CF_HAL_ID { get; set; }
         public int Price { get; set; }
@@ -28,10 +33,59 @@ namespace VaultLib.Support.ProStreet.VLT
         public uint BrandHALId { get; set; }
         public uint LogoTextureId { get; set; }
 
-        public VLTListContainer<RefSpec> AutoSculptCamera1 { get; set; }
-        public VLTListContainer<RefSpec> AutoSculptCamera2 { get; set; }
-        public VLTListContainer<RefSpec> AutoSculptCamera3 { get; set; }
-        public VLTPointerContainer<FEPartDetail> PartDetails { get; set; }
+        public VLTListContainer<RefSpec> AutoSculptCamera1
+        {
+            get
+            {
+                if (_autoSculptCamera1 == null)
+                {
+                    _autoSculptCamera1 = new VLTListContainer<RefSpec>(Class, Field, Collection, 0);
+                }
+
+                return _autoSculptCamera1;
+            }
+            set => _autoSculptCamera1 = value;
+        }
+        public VLTListContainer<RefSpec> AutoSculptCamera2
+        {
+            get
+            {
+                if (_autoSculptCamera2 == null)
+                {
+                    _autoSculptCamera2 = new VLTListContainer<RefSpec>(Class, Field, Collection, 0);
+                }
+
+                return _autoSculptCamera2;
+            }
+            set => _autoSculptCamera2 = value;
+        }
+        public VLTListContainer<RefSpec> AutoSculptCamera3
+        {
+            get
+            {
+                if (_autoSculptCamera3 == null)
+                {
+                    _autoSculptCamera3 = new VLTListContainer<RefSpec>(Class, Field, Collection, 0);
+                }
+
+                return _autoSculptCamera3;
+            }
+            set => _autoSculptCamera3 = value;
+        }
+        public VLTPointerContainer<FEPartDetail> PartDetails
+        {
+            get
+            {
+                if (_partDetails == null)
+                {
+                    _partDetails = new VLTPointerContainer<FEPartDetail>(Class, Field, Collection);
+                    _partDetails.Value = new FEPartDetail(Class, Field, Collection);
+                }
+
+                return _partDetails;
+            }
+            set => _partDetails = value;
+        }
         public uint DetailHash { get; set; }
         public string OfferID { get; set; }
 

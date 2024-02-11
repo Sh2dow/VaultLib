@@ -31,5 +31,10 @@ namespace VaultLib.Core.Types.EA.Reflection
 
         public abstract IConvertible GetValue();
         public abstract void SetValue(IConvertible value);
+
+        public override string ToString()
+        {
+            return this.GetValue().ToString();
+        }
     }
 }

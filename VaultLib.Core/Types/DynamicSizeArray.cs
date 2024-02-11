@@ -3,6 +3,7 @@
 // Created: 10/19/2019 @ 5:40 PM.
 
 using System.IO;
+using System.Linq;
 using VaultLib.Core.Data;
 using VaultLib.Core.Utils;
 
@@ -58,6 +59,11 @@ namespace VaultLib.Core.Types
             _srcPtr = bw.BaseStream.Position;
             bw.Write(0);
             bw.Write(Items.Length);
+        }
+
+        public override string ToString()
+        {
+            return string.Join(" | ", Items.Select(x => x.ToString()));
         }
     }
 }

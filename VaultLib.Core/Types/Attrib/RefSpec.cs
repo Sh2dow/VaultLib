@@ -15,10 +15,12 @@ namespace VaultLib.Core.Types.Attrib
     {
         public RefSpec(VltClass @class, VltClassField field, VltCollection collection) : base(@class, field, collection)
         {
+            this.ClassKey = "";
         }
 
         public RefSpec(VltClass @class, VltClassField field) : base(@class, field)
         {
+            this.ClassKey = "";
         }
 
         public override string ClassKey { get; set; }

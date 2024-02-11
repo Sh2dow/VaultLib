@@ -115,6 +115,11 @@ namespace VaultLib.Core.Data
         public IEnumerable<VltClassField> StaticFields => from field in Fields.Values where field.IsStatic orderby field.Offset select field;
 
         /// <summary>
+        /// Gets an enumerator of every optional field in the class.
+        /// </summary>
+        public IEnumerable<VltClassField> OptionalFields => from field in Fields.Values where !field.IsInLayout && !field.IsStatic orderby field.Offset select field;
+
+        /// <summary>
         /// Gets a value indicating whether the class has any base fields.
         /// </summary>
         public bool HasBaseFields => BaseFields.Any();

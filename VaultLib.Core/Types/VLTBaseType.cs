@@ -3,6 +3,7 @@
 // Created: 09/25/2019 @ 7:12 PM.
 
 using System.IO;
+using System.Linq;
 using VaultLib.Core.Data;
 using VaultLib.Core.Utils;
 
@@ -34,5 +35,12 @@ namespace VaultLib.Core.Types
 
         public abstract void Read(Vault vault, BinaryReader br);
         public abstract void Write(Vault vault, BinaryWriter bw);
+
+        public override string ToString()
+        {
+            var properties = this.GetType().GetProperties();
+            var strs = properties.Select(property => $"{property.Name}: {property.GetValue(this)}");
+            return string.Join(" | ", strs);
+        }
     }
 }

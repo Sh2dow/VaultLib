@@ -51,5 +51,10 @@ namespace VaultLib.Core.Types
             Debug.Assert(_ptrSrc != 0 && _ptrDst != 0);
             vault.SaveContext.AddPointer(_ptrSrc, _ptrDst, false);
         }
+
+        public override string ToString()
+        {
+            return string.Join(" | ", Data);
+        }
     }
 }
