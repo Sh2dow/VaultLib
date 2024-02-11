@@ -26,5 +26,10 @@ namespace VaultLib.Core.Types.Attrib.Types
         {
             for (var i = 0; i < 16; i++) bw.Write(Data[i]);
         }
+
+        public override string ToString()
+        {
+            return string.Join(" | ", Data);
+        }
     }
 }
