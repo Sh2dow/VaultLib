@@ -14,12 +14,19 @@ namespace VaultLib.Core.Hashing
     {
         private static readonly Dictionary<uint, string> VltHashDictionary = new Dictionary<uint, string>();
         private static readonly Dictionary<ulong, string> Vlt64HashDictionary = new Dictionary<ulong, string>();
-        private static string HashFile;
+        private static HashSet<string> UserHashes = new HashSet<string>();
+        private static string UserHashesFile;
 
         public static void LoadDictionary(string file)
         {
-            HashFile = file;
             foreach (var line in File.ReadLines(file)) AddVLT(line);
+
+            UserHashesFile = Path.Combine(Path.GetDirectoryName(file), "UserHashes.txt");
+            if (File.Exists(UserHashesFile))
+            {
+                UserHashes = File.ReadLines(UserHashesFile).ToHashSet();
+                foreach (var line in UserHashes) AddVLT(line);
+            }
         }
 
         public static void AddVLT(string str)
@@ -28,6 +35,15 @@ namespace VaultLib.Core.Hashing
             {
                 VltHashDictionary[VLT32Hasher.Hash(str)] = str;
                 Vlt64HashDictionary[VLT64Hasher.Hash(str)] = str;
+            }
+        }
+
+        public static void AddUserHash(string str)
+        {
+            AddVLT(str);
+            if (!str.ToLowerInvariant().StartsWith("0x"))
+            {
+                UserHashes.Add(str);
             }
         }
 
@@ -43,8 +59,8 @@ namespace VaultLib.Core.Hashing
 
         public static void Save()
         {
-            if (!string.IsNullOrEmpty(HashFile))
-                File.WriteAllLines(HashFile, VltHashDictionary.Select(x => x.Value));
+            if (!string.IsNullOrEmpty(UserHashesFile))
+                File.WriteAllLines(UserHashesFile, UserHashes);
         }
     }
 }
