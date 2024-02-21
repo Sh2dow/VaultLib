@@ -3,6 +3,7 @@
 // Created: 09/25/2019 @ 8:32 PM.
 
 using System;
+using System.Globalization;
 using System.IO;
 using VaultLib.Core.Data;
 
@@ -40,6 +41,11 @@ namespace VaultLib.Core.Types.EA.Reflection
         public override void SetValue(IConvertible value)
         {
             Value = (float)value;
+        }
+
+        public override string ToString()
+        {
+            return Value.ToString(CultureInfo.InvariantCulture);
         }
     }
 }

@@ -2,6 +2,7 @@
 // 
 // Created: 09/26/2019 @ 7:25 AM.
 
+using System.Globalization;
 using System.IO;
 using VaultLib.Core.Data;
 
@@ -29,7 +30,7 @@ namespace VaultLib.Core.Types.Attrib.Types
 
         public override string ToString()
         {
-            return string.Join(" | ", Data);
+            return string.Join(" | ", Data, CultureInfo.InvariantCulture);
         }
     }
 }

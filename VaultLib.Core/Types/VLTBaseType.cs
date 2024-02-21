@@ -2,6 +2,8 @@
 // 
 // Created: 09/25/2019 @ 7:12 PM.
 
+using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using VaultLib.Core.Data;
@@ -39,7 +41,12 @@ namespace VaultLib.Core.Types
         public override string ToString()
         {
             var properties = this.GetType().GetProperties();
-            var strs = properties.Select(property => $"{property.Name}: {property.GetValue(this)}");
+            var strs = properties.Select(property =>
+            {
+                var val = property.GetValue(this);
+                string value = val is IConvertible ? (val as IConvertible).ToString(CultureInfo.InvariantCulture) : val.ToString();
+                return $"{property.Name}: {value}";
+            });
             return string.Join(" | ", strs);
         }
     }

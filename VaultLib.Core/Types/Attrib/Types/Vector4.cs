@@ -2,6 +2,7 @@
 // 
 // Created: 09/28/2019 @ 3:53 PM.
 
+using System.Globalization;
 using System.IO;
 using VaultLib.Core.Data;
 
@@ -41,7 +42,7 @@ namespace VaultLib.Core.Types.Attrib.Types
 
         public override string ToString()
         {
-            return $"({X}, {Y}, {Z}, {W})";
+            return $"({X.ToString(CultureInfo.InvariantCulture)}, {Y.ToString(CultureInfo.InvariantCulture)}, {Z.ToString(CultureInfo.InvariantCulture)}, {W.ToString(CultureInfo.InvariantCulture)})";
         }
     }
 }
