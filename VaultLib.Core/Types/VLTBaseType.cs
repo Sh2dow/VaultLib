@@ -44,7 +44,7 @@ namespace VaultLib.Core.Types
             var strs = properties.Select(property =>
             {
                 var val = property.GetValue(this);
-                string value = val is IConvertible ? (val as IConvertible).ToString(CultureInfo.InvariantCulture) : val.ToString();
+                string value = val is IConvertible ? (val as IConvertible).ToString(CultureInfo.InvariantCulture) : (val?.ToString() ?? "");
                 return $"{property.Name}: {value}";
             });
             return string.Join(" | ", strs);
