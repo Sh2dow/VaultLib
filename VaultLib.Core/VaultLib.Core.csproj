@@ -5,11 +5,11 @@
     <Company>NFSTools</Company>
     <Description>Core library for processing VLT files - requires supplemental game modules</Description>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <LangVersion>8</LangVersion>
     <PackageId>VaultLib.Core</PackageId>
     <Platforms>x86</Platforms>
     <Product>VaultLib.Core</Product>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <LangVersion>default</LangVersion>
+    <TargetFramework>net8.0-windows</TargetFramework>
     <Version>1.2.0</Version>
   </PropertyGroup>
 
