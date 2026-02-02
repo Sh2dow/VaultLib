@@ -2,12 +2,12 @@
 // 
 // Created: 09/23/2019 @ 8:59 PM.
 
-using CoreLibraries.IO;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using CoreLibraries.IO;
 using VaultLib.Core.Data;
 using VaultLib.Core.Exports;
 using VaultLib.Core.Hashing;
@@ -115,13 +115,18 @@ namespace VaultLib.Core.DB
             {
                 return Options.Type == DatabaseType.X64Database ? VLT64Hasher.Hash(s) : VLT32Hasher.Hash(s);
             }
-            
+
             Stopwatch stopwatch = Stopwatch.StartNew();
 
             Dictionary<VltClass, ulong> hashDictionary = Classes.ToDictionary(c => c, c => Hash(c.Name));
             Dictionary<ulong, Dictionary<ulong, VltCollection>> collectionDictionary =
-                RowManager.Rows.GroupBy(r => hashDictionary[r.Class])
-                    .ToDictionary(g => g.Key, g => g.ToDictionary(c => Hash(c.Name), c => c));
+                RowManager.Rows
+                    .GroupBy(r => hashDictionary[r.Class])
+                    .ToDictionary(
+                        g => g.Key,
+                        g => g.GroupBy(c => Hash(c.Name))
+                            .ToDictionary(gg => gg.Key, gg => gg.First())
+                    );
 
             for (int i = RowManager.Rows.Count - 1; i >= 0; i--)
             {

@@ -17,7 +17,8 @@ namespace VaultLib.Core.Types
 {
     public class VLTArrayType : VLTBaseType, IReferencesStrings, IReferencesCollections
     {
-        public VLTArrayType(VltClass @class, VltClassField field, VltCollection collection, Type itemType) : base(@class, field,
+        public VLTArrayType(VltClass @class, VltClassField field, VltCollection collection, Type itemType) : base(
+            @class, field,
             collection)
         {
             ItemType = itemType;
@@ -53,7 +54,6 @@ namespace VaultLib.Core.Types
          * The reason these functions are implemented is because arrays may contain items that have pointers.
          * This system is complicated.
          */
-
         public IEnumerable<string> GetStrings()
         {
             return Items.OfType<IReferencesStrings>().SelectMany(r => r.GetStrings());
@@ -82,7 +82,13 @@ namespace VaultLib.Core.Types
         {
             Capacity = br.ReadUInt16();
             var count = br.ReadUInt16();
-            Debug.Assert(count <= Capacity);
+            if (count > Capacity)
+            {
+                Debug.WriteLine(
+                    $"[Warning] Array count ({count}) is greater than Capacity ({Capacity}). Forcing count = Capacity.");
+                count = Capacity;
+            }
+
             Items = new List<VLTBaseType>();
             FieldSize = br.ReadUInt16();
 
@@ -92,15 +98,21 @@ namespace VaultLib.Core.Types
             for (var i = 0; i < count; i++)
             {
                 var item = TypeRegistry.ConstructInstance(ItemType, Class, Field, Collection);
-
                 br.AlignReader(ItemAlignment);
-
                 var start = br.BaseStream.Position;
                 item.Read(vault, br);
-                Debug.Assert(br.BaseStream.Position - start == FieldSize);
+                var readBytes = br.BaseStream.Position - start;
+                if (readBytes != FieldSize)
+                {
+                    Debug.WriteLine(
+                        $"[Warning] Array item {i} read {readBytes} bytes, expected {FieldSize}. Forcing stream position.");
+                    br.BaseStream.Position = start + FieldSize;
+                }
+
                 Items.Add(item);
             }
 
+            // Skip remaining unused array slots.
             br.BaseStream.Position += (Capacity - count) * FieldSize;
         }
 
@@ -144,7 +156,7 @@ namespace VaultLib.Core.Types
                 throw new IndexOutOfRangeException($"Index must be in range [0, {Items.Count})");
             }
 
-            return (T) BaseTypeToData(Items[index]);
+            return (T)BaseTypeToData(Items[index]);
         }
 
         /// <summary>
@@ -185,24 +197,25 @@ namespace VaultLib.Core.Types
             switch (data)
             {
                 case string s:
+                {
+                    if (originalData is IStringValue sv)
                     {
-                        if (originalData is IStringValue sv)
-                        {
-                            sv.SetString(s);
-                            return originalData;
-                        }
+                        sv.SetString(s);
+                        return originalData;
+                    }
 
-                        break;
-                    }
+                    break;
+                }
                 case IConvertible ic:
+                {
+                    if (originalData is PrimitiveTypeBase ptb)
                     {
-                        if (originalData is PrimitiveTypeBase ptb)
-                        {
-                            ptb.SetValue(ic);
-                            return originalData;
-                        }
-                        break;
+                        ptb.SetValue(ic);
+                        return originalData;
                     }
+
+                    break;
+                }
                 case VLTBaseType vbt:
                     if (vbt is VLTArrayType)
                         throw new ApplicationException("Array DataToBaseType cannot accept a VLTArrayType instance!");

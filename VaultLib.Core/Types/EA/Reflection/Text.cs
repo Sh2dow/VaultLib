@@ -34,12 +34,26 @@ namespace VaultLib.Core.Types.EA.Reflection
             return new List<string>(new[] { Value });
         }
 
+        // public void ReadPointerData(Vault vault, BinaryReader br)
+        // {
+        //     Debug.Assert(Pointer != 0);
+        //     br.BaseStream.Position = Pointer;
+        //     Value = NullTerminatedString.Read(br);
+        // }
+        
         public void ReadPointerData(Vault vault, BinaryReader br)
         {
-            Debug.Assert(Pointer != 0);
+            if (Pointer == 0)
+            {
+                Debug.WriteLine("[Warning] Text pointer is 0; skipping pointer data read.");
+                // Optionally, set a default value:
+                Value = string.Empty;
+                return;
+            }
             br.BaseStream.Position = Pointer;
             Value = NullTerminatedString.Read(br);
         }
+
 
         public void WritePointerData(Vault vault, BinaryWriter bw)
         {

@@ -102,22 +102,22 @@ namespace VaultLib.Core.Data
             return false;
         }
 
-        #region Helpers
+        #region HelpersCoreLibraries.Data
 
         /// <summary>
         /// Gets an enumerator of every required field in the class.
         /// </summary>
-        public IEnumerable<VltClassField> BaseFields => from field in Fields.Values where field.IsInLayout orderby field.Offset select field;
+        public IEnumerable<VltClassField> BaseFields => from vltField in Fields.Values where vltField.IsInLayout orderby vltField.Offset select vltField;
 
         /// <summary>
         /// Gets an enumerator of every static field in the class.
         /// </summary>
-        public IEnumerable<VltClassField> StaticFields => from field in Fields.Values where field.IsStatic orderby field.Offset select field;
+        public IEnumerable<VltClassField> StaticFields => from vltField in Fields.Values where vltField.IsStatic orderby vltField.Offset select vltField;
 
         /// <summary>
         /// Gets an enumerator of every optional field in the class.
         /// </summary>
-        public IEnumerable<VltClassField> OptionalFields => from field in Fields.Values where !field.IsInLayout && !field.IsStatic orderby field.Offset select field;
+        public IEnumerable<VltClassField> OptionalFields => from vltField in Fields.Values where !vltField.IsInLayout && !vltField.IsStatic orderby vltField.Offset select vltField;
 
         /// <summary>
         /// Gets a value indicating whether the class has any base fields.

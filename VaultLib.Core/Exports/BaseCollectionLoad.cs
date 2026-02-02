@@ -25,7 +25,8 @@ namespace VaultLib.Core.Exports
 
         public override ulong GetExportID()
         {
-            return VLT32Hasher.Hash($"{Collection.Class.Name}/{Collection.Name}");
+            // return VLT32Hasher.Hash($"{Collection.Class.Name}/{Collection.Name}");
+            return VLT32Hasher.Hash(Collection.Name);
         }
     }
 }

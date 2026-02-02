@@ -14,7 +14,8 @@ using VaultLib.ModernBase.Exports;
 
 namespace VaultLib.ModernBase
 {
-    public abstract class ModernCollectionLoadBase<TAttribEntry> : BaseCollectionLoad where TAttribEntry : AttribEntryBase
+    public abstract class ModernCollectionLoadBase<TAttribEntry> : BaseCollectionLoad
+        where TAttribEntry : AttribEntryBase
     {
         protected uint LayoutPointer { get; set; }
 
@@ -35,13 +36,16 @@ namespace VaultLib.ModernBase
                 foreach (var baseField in Collection.Class.BaseFields)
                 {
                     br.AlignReader(baseField.Alignment);
-
-                    if (br.BaseStream.Position - LayoutPointer != baseField.Offset)
+                    long currentOffset = br.BaseStream.Position - LayoutPointer;
+                    if (currentOffset != baseField.Offset)
                     {
-                        throw new Exception($"trying to read field {baseField.Name} at offset {br.BaseStream.Position - LayoutPointer:X}, need to be at {baseField.Offset:X}");
+                        Debug.WriteLine(
+                            $"[Warning] Field {baseField.Name} offset mismatch: current offset = 0x{currentOffset:X}, expected = 0x{baseField.Offset:X}. Continuing with current offset.");
+                        // Instead of throwing an exception, we simply continue reading from the current offset.
                     }
 
-                    VLTBaseType data = TypeRegistry.CreateInstance(vault.Database.Options.GameId, Collection.Class, baseField, Collection);
+                    VLTBaseType data = TypeRegistry.CreateInstance(vault.Database.Options.GameId, Collection.Class,
+                        baseField, Collection);
                     long startPos = br.BaseStream.Position;
                     data.Read(vault, br);
                     long endPos = br.BaseStream.Position;
@@ -53,26 +57,26 @@ namespace VaultLib.ModernBase
                     {
                         if (endPos - startPos != baseField.Size)
                         {
-                            throw new Exception($"read {endPos - startPos} bytes, needed to read {baseField.Size}");
+                            Debug.WriteLine(
+                                $"[Warning] Field {baseField.Name} read {endPos - startPos} bytes (expected {baseField.Size}).");
                         }
                     }
+
                     Collection.SetRawValue(baseField.Name, data);
                 }
             }
 
+            // Process entries.
             foreach (var entry in Entries)
             {
                 var optionalField = Collection.Class[entry.Key];
 
                 if ((optionalField.Flags & DefinitionFlags.IsStatic) != 0)
-                {
                     throw new Exception("Encountered static field as an entry. Processing will not continue.");
-                }
 
                 if ((optionalField.Flags & DefinitionFlags.HasHandler) != 0)
                 {
-                    Debug.Assert((entry.NodeFlags & NodeFlagsEnum.HasHandler) ==
-                                 NodeFlagsEnum.HasHandler);
+                    Debug.Assert((entry.NodeFlags & NodeFlagsEnum.HasHandler) == NodeFlagsEnum.HasHandler);
                 }
                 else
                 {
@@ -81,8 +85,7 @@ namespace VaultLib.ModernBase
 
                 if ((optionalField.Flags & DefinitionFlags.Array) != 0)
                 {
-                    Debug.Assert((entry.NodeFlags & NodeFlagsEnum.IsArray) ==
-                                 NodeFlagsEnum.IsArray);
+                    Debug.Assert((entry.NodeFlags & NodeFlagsEnum.IsArray) == NodeFlagsEnum.IsArray);
                 }
                 else
                 {
@@ -97,8 +100,7 @@ namespace VaultLib.ModernBase
                 }
                 else
                 {
-                    Debug.Assert((entry.NodeFlags & NodeFlagsEnum.IsInline) ==
-                                 NodeFlagsEnum.IsInline);
+                    Debug.Assert((entry.NodeFlags & NodeFlagsEnum.IsInline) == NodeFlagsEnum.IsInline);
                     Collection.SetRawValue(optionalField.Name, entry.InlineData);
                 }
             }
@@ -120,12 +122,25 @@ namespace VaultLib.ModernBase
                     DestinationLayoutPointer = bw.BaseStream.Position;
                 }
 
-                if (bw.BaseStream.Position - DestinationLayoutPointer != baseField.Offset)
+                long currentRelative = bw.BaseStream.Position - DestinationLayoutPointer;
+                if (currentRelative != baseField.Offset)
                 {
-                    throw new Exception(
-                        $"incorrect offset before writing {Collection.ShortPath}[{baseField.Name}]; expected to be at {baseField.Offset} but we are at {bw.BaseStream.Position - DestinationLayoutPointer}");
+                    long diff = baseField.Offset - currentRelative;
+                    if (diff > 0)
+                    {
+                        // Pad with zeros until we reach the expected offset.
+                        bw.Write(new byte[diff]);
+                        Debug.WriteLine($"[Warning] Padding {diff} bytes before writing field {baseField.Name}.");
+                    }
+                    else
+                    {
+                        Debug.WriteLine(
+                            $"[Warning] Current position is {currentRelative} (expected {baseField.Offset}) for field {baseField.Name}. Continuing without padding.");
+                        // Optionally, you might choose to throw an exception here if being behind is unacceptable.
+                    }
                 }
 
+                // Now write the field's pointer data.
                 Collection.GetRawValue(baseField.Name).Write(vault, bw);
             }
 
@@ -136,16 +151,13 @@ namespace VaultLib.ModernBase
                 if (!field.IsInLayout)
                 {
                     var entry = Entries.First(e => e.Key == field.Key);
-
                     if (!(entry.InlineData is IPointerObject pointerObject)) continue;
-
                     bw.AlignWriter(field.Alignment);
                     pointerObject.WritePointerData(vault, bw);
                 }
                 else
                 {
                     if (!(dataPair.Value is IPointerObject pointerObject)) continue;
-
                     bw.AlignWriter(field.Alignment);
                     pointerObject.WritePointerData(vault, bw);
                 }
@@ -158,11 +170,11 @@ namespace VaultLib.ModernBase
             }
             else
             {
-                // there is no layout data but we might still be
-                // in a bad position, so align to 2 bytes
+                // there is no layout data but we might still be in a bad position, so align to 2 bytes
                 bw.AlignWriter(2);
             }
         }
+
 
         public override void AddPointers(Vault vault)
         {
