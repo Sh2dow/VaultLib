@@ -151,7 +151,8 @@ public class CollectionLoad32 : BaseCollectionLoad<Key32>
                 if (br.BaseStream.Position - _layoutPointer != baseField.Offset)
                 {
                     throw new Exception(
-                        $"trying to read field {baseField.Key} at offset 0x{br.BaseStream.Position - _layoutPointer:X}, need to be at 0x{baseField.Offset:X}");
+                        $"trying to read field {baseField.Key} at offset 0x{br.BaseStream.Position - _layoutPointer:X}, need to be at 0x{baseField.Offset:X} " +
+                        $"(class {Collection.Class.Key}, collection {Collection.Key})");
                 }
 
                 var valueStartPos = br.BaseStream.Position;
@@ -248,8 +249,13 @@ public class CollectionLoad32 : BaseCollectionLoad<Key32>
                 var valueEndPos = bw.BaseStream.Position;
                 var valueBytesWritten = valueEndPos - valueStartPos;
 
-                Debug.Assert(valueBytesWritten == GetExpectedDataSize(baseField, rawValue, valueStartPos),
-                    "valueBytesWritten == GetExpectedDataSize(baseField, rawValue, valueStartPos)");
+                var expectedSize = GetExpectedDataSize(baseField, rawValue, valueStartPos);
+                if (valueBytesWritten != expectedSize)
+                {
+                    throw new InvalidDataException(
+                        $"Wrote {valueBytesWritten} bytes for base field {baseField.Key} in class {Collection.Class.Key} " +
+                        $"but expected {expectedSize} bytes.");
+                }
             }
         }
 

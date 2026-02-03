@@ -130,9 +130,18 @@ public class TypeRegistry<TKey> where TKey : struct, IKey<TKey>
 
     public Type ResolveFieldType(TKey classKey, TKey fieldKey, TKey fieldTypeKey)
     {
-        return _fieldOverrides.TryGetValue((classKey, fieldKey), out var type)
-            ? type
-            : ResolveType(fieldTypeKey);
+        if (_fieldOverrides.TryGetValue((classKey, fieldKey), out var type))
+            return type;
+
+        try
+        {
+            return ResolveType(fieldTypeKey);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            throw new KeyNotFoundException(
+                $"Type {fieldTypeKey} for field {fieldKey} in class {classKey} is not registered", ex);
+        }
     }
 
     private Type ResolveType(TKey key)
