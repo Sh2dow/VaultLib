@@ -68,6 +68,11 @@ public class VaultReadContext<TKey> where TKey : struct, IKey<TKey>
     {
         var ptr = binaryReader.ReadUInt32();
 
+        if (ptr == 0)
+        {
+            return string.Empty;
+        }
+
         if (!Strings.TryGetValue(ptr, out var value))
         {
             throw new InvalidDataException($"Could not find string at {ptr}");

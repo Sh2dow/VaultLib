@@ -175,7 +175,9 @@ public class CollectionLoad32 : BaseCollectionLoad<Key32>
 
             if (layoutBytesRead > Collection.Class.LayoutSize)
             {
-                throw new Exception("read too much layout data");
+                // Some legacy packs report a smaller layout size than the actual data read.
+                // Keep the data and expand the layout size to avoid hard failure.
+                Collection.Class.LayoutSize = (uint)layoutBytesRead;
             }
         }
 
