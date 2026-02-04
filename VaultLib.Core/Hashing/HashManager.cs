@@ -32,9 +32,4 @@ public static class HashManager
     {
         return Vlt64HashDictionary.GetValueOrDefault(hash);
     }
-
-    public static IEnumerable<string> GetVltStrings()
-    {
-        return VltHashDictionary.Values;
-    }
 }

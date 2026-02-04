@@ -52,16 +52,16 @@ public class VaultReadContext<TKey> where TKey : struct, IKey<TKey>
     /// <param name="binStream"></param>
     /// <param name="vltStream"></param>
     /// <param name="byteOrder"></param>
-    public VaultReadContext(Vault<TKey> vault, Stream binStream, Stream vltStream, ByteOrder byteOrder)
+    public VaultReadContext(Vault<TKey> vault, Stream binStream, Stream vltStream)
     {
         Database = vault.Database;
         Vault = vault;
         BinStream = binStream;
         VltStream = vltStream;
-        ByteOrder = byteOrder;
         Strings = new Dictionary<long, string>();
         Pointers = new List<VltPointer>();
         Exports = new List<BaseExport<TKey>>();
+        ByteOrder = vault.ByteOrder;
     }
 
     public string ReadString(BinaryReader binaryReader)

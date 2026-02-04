@@ -151,8 +151,7 @@ public class CollectionLoad32 : BaseCollectionLoad<Key32>
                 if (br.BaseStream.Position - _layoutPointer != baseField.Offset)
                 {
                     throw new Exception(
-                        $"trying to read field {baseField.Key} at offset 0x{br.BaseStream.Position - _layoutPointer:X}, need to be at 0x{baseField.Offset:X} " +
-                        $"(class {Collection.Class.Key}, collection {Collection.Key})");
+                        $"trying to read field {baseField.Key} at offset 0x{br.BaseStream.Position - _layoutPointer:X}, need to be at 0x{baseField.Offset:X}");
                 }
 
                 var valueStartPos = br.BaseStream.Position;
@@ -176,9 +175,7 @@ public class CollectionLoad32 : BaseCollectionLoad<Key32>
 
             if (layoutBytesRead > Collection.Class.LayoutSize)
             {
-                // Some legacy packs report a smaller layout size than the actual data read.
-                // Keep the data and expand the layout size to avoid hard failure.
-                Collection.Class.LayoutSize = (uint)layoutBytesRead;
+                throw new Exception("read too much layout data");
             }
         }
 
@@ -249,13 +246,8 @@ public class CollectionLoad32 : BaseCollectionLoad<Key32>
                 var valueEndPos = bw.BaseStream.Position;
                 var valueBytesWritten = valueEndPos - valueStartPos;
 
-                var expectedSize = GetExpectedDataSize(baseField, rawValue, valueStartPos);
-                if (valueBytesWritten != expectedSize)
-                {
-                    throw new InvalidDataException(
-                        $"Wrote {valueBytesWritten} bytes for base field {baseField.Key} in class {Collection.Class.Key} " +
-                        $"but expected {expectedSize} bytes.");
-                }
+                Debug.Assert(valueBytesWritten == GetExpectedDataSize(baseField, rawValue, valueStartPos),
+                    "valueBytesWritten == GetExpectedDataSize(baseField, rawValue, valueStartPos)");
             }
         }
 
