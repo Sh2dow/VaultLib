@@ -103,7 +103,11 @@ public class VaultWriter<TKey> where TKey : struct, IKey<TKey>
 
         var strings = _writeContext.Collections.SelectMany(CollectStrings).ToList();
         stringsSet.UnionWith(strings);
-        var stringsChunk = new BinStringsChunk<TKey> { Strings = new List<string>(stringsSet) };
+        var sortedStrings = stringsSet
+            .Where(s => !string.IsNullOrEmpty(s))
+            .OrderBy(s => s, StringComparer.Ordinal)
+            .ToList();
+        var stringsChunk = new BinStringsChunk<TKey> { Strings = sortedStrings };
 
         cw.WriteChunk(stringsChunk);
 

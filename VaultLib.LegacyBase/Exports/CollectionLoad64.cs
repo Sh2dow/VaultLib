@@ -68,6 +68,7 @@ public class CollectionLoad64 : BaseCollectionLoad<Key64>
     {
         List<KeyValuePair<Key64, object>> optionalDataColumns = (from pair in Collection.GetData()
             where !Collection.Class[pair.Key].IsInLayout
+            orderby pair.Key
             select pair).ToList();
 
         _entries = new AttribEntry64[optionalDataColumns.Count];

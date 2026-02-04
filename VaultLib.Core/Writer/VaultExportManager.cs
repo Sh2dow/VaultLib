@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using VaultLib.Core.Data;
 using VaultLib.Core.DataInterfaces;
 using VaultLib.Core.Exports;
 
@@ -33,22 +34,57 @@ public class VaultExportManager<TKey> where TKey : struct, IKey<TKey>
         Exports.Clear();
 
         var exportFactory = WriteContext.Database.ExportFactory;
-            
+        var collectionDepthCache = new Dictionary<VltCollection<TKey>, int>();
+
+        int GetCollectionDepth(VltCollection<TKey> collection)
+        {
+            if (collectionDepthCache.TryGetValue(collection, out var depth))
+            {
+                return depth;
+            }
+
+            depth = 0;
+            var current = collection.Parent;
+            while (current != null)
+            {
+                depth++;
+                current = current.Parent;
+            }
+
+            collectionDepthCache[collection] = depth;
+            return depth;
+        }
+
         if (WriteContext.Vault.IsPrimaryVault)
         {
             Exports.Add(exportFactory.BuildDatabaseLoad());
 
-            foreach (var vltClass in WriteContext.Database.Classes)
+            foreach (var vltClass in WriteContext.Database.Classes.OrderBy(c => c.Key))
             {
                 Exports.Add(exportFactory.BuildClassLoad(vltClass));
-                Exports.AddRange(from collection in WriteContext.Collections
-                    where collection.Class.Key == vltClass.Key
+                var orderedCollections = WriteContext.Collections
+                    .Select((collection, index) => new { collection, index })
+                    .Where(item => item.collection.Class.Key == vltClass.Key)
+                    .OrderBy(item => GetCollectionDepth(item.collection))
+                    .ThenBy(item => item.collection.Key)
+                    .ThenBy(item => item.index)
+                    .Select(item => item.collection);
+
+                Exports.AddRange(from collection in orderedCollections
                     select exportFactory.BuildCollectionLoad(collection));
             }
         }
         else
         {
-            Exports.AddRange(from collection in WriteContext.Collections
+            var orderedCollections = WriteContext.Collections
+                .Select((collection, index) => new { collection, index })
+                .OrderBy(item => item.collection.Class.Key)
+                .ThenBy(item => GetCollectionDepth(item.collection))
+                .ThenBy(item => item.collection.Key)
+                .ThenBy(item => item.index)
+                .Select(item => item.collection);
+
+            Exports.AddRange(from collection in orderedCollections
                 select exportFactory.BuildCollectionLoad(collection));
         }
     }

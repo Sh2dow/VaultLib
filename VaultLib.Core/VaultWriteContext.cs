@@ -94,6 +94,12 @@ public class VaultWriteContext<TKey> where TKey : struct, IKey<TKey>
 
     public void WriteString(string str, FieldReadWriteContext<TKey> fieldContext, BinaryWriter bw)
     {
+        if (string.IsNullOrEmpty(str))
+        {
+            bw.Write(0u);
+            return;
+        }
+
         if (!StringOffsets.TryGetValue(str, out var strPtr))
             throw new KeyNotFoundException($"String offset table does not have an entry for: {str}");
 

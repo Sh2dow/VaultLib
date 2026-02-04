@@ -65,6 +65,7 @@ public class CollectionLoad32 : BaseCollectionLoad<Key32>
     {
         List<KeyValuePair<Key32, object>> optionalDataColumns = (from pair in Collection.GetData()
             where !Collection.Class[pair.Key].IsInLayout
+            orderby pair.Key
             select pair).ToList();
 
         _entries = new AttribEntry32[optionalDataColumns.Count];
@@ -131,7 +132,7 @@ public class CollectionLoad32 : BaseCollectionLoad<Key32>
     public override Key32 GetExportId()
     {
         // TODO: the collection should probably have an ID separate from key.
-        return new Key32((uint)HashCode.Combine(Collection.Class.Key, Collection.Key));
+        return new Key32(Collection.Class.Key.Hash | Collection.Key.Hash);
     }
 
     public override void ReadPointerData(VaultReadContext<Key32> context, BinaryReader br)
