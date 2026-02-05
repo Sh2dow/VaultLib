@@ -47,6 +47,8 @@ public class ClassLoad32 : BaseClassLoad<Key32>
 
     public override void Write(VaultWriteContext<Key32> context, BinaryWriter bw)
     {
+        Class.LayoutSize = (uint)ComputeLayoutSize();
+
         bw.Write(Class.Key.Hash);
 
         int collReserve = (from collection in context.Database.RowManager.GetCollections(Class.Key)
@@ -127,5 +129,35 @@ public class ClassLoad32 : BaseClassLoad<Key32>
     public override Key32 GetExportId()
     {
         return Class.Key;
+    }
+
+    private int ComputeLayoutSize()
+    {
+        if (!Class.HasBaseFields)
+            return 0;
+
+        var layoutSize = 0;
+        var packingRequirement = 1;
+        foreach (var baseField in Class.BaseFields)
+        {
+            if (layoutSize % baseField.Alignment != 0)
+            {
+                layoutSize += baseField.Alignment - layoutSize % baseField.Alignment;
+            }
+
+            if ((baseField.Flags & DefinitionFlags.Array) != 0)
+            {
+                layoutSize += 8;
+                layoutSize += baseField.Size * baseField.MaxCount;
+            }
+            else
+            {
+                layoutSize += baseField.Size;
+            }
+
+            packingRequirement = Math.Max(packingRequirement, baseField.Alignment);
+        }
+
+        return (layoutSize + packingRequirement - 1) & ~(packingRequirement - 1);
     }
 }

@@ -173,9 +173,12 @@ public class CollectionLoad32 : BaseCollectionLoad<Key32>
 
             var layoutBytesRead = br.BaseStream.Position - _layoutPointer;
 
-            if (layoutBytesRead > Collection.Class.LayoutSize)
+            if (Collection.Class.LayoutSize != 0 && layoutBytesRead > Collection.Class.LayoutSize)
             {
-                throw new Exception("read too much layout data");
+                // Some legacy packs report a smaller layout size than what's actually read.
+                // Treat this as a warning to avoid aborting the load.
+                Debug.WriteLine(
+                    $"WARN: read too much layout data (read: 0x{layoutBytesRead:X}, layout: 0x{Collection.Class.LayoutSize:X})");
             }
         }
 

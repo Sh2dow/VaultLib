@@ -121,8 +121,11 @@ public class VaultWriter<TKey> where TKey : struct, IKey<TKey>
         BinaryWriter bw = new BinaryWriter(ms);
         ChunkWriter<TKey> cw = new ChunkWriter<TKey>(bw, _writeContext);
 
-        var versionChunk = new VltVersionChunk<TKey>();
-        cw.WriteChunk(versionChunk);
+        if (Options.Quirks.WriteVersionChunk)
+        {
+            var versionChunk = new VltVersionChunk<TKey>();
+            cw.WriteChunk(versionChunk);
+        }
 
         var startChunk = new VltStartChunk<TKey>();
         var dependencyChunk = new VltDependencyChunk<TKey>(new List<string>

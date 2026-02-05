@@ -53,6 +53,9 @@ public class ClassLoad32 : BaseClassLoad<Key32>
 
     public override void Write(VaultWriteContext<Key32> context, BinaryWriter bw)
     {
+        Class.LayoutSize = (uint)ComputeLayoutSize();
+        Class.StaticSize = (uint)ComputeStaticSize();
+
         int collectionReserve = (from collection in context.Collections
             where collection.Class.Key == Class.Key
             select collection).Count();

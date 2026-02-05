@@ -147,5 +147,7 @@ public class VltCollection<TKey> where TKey : struct, IKey<TKey>
     }
 
     public void RemoveValue(string name) => this.RemoveValue(TKey.FromString(name));
+
+    public byte[]? LayoutOverreadBytes { get; set; }
     
 }

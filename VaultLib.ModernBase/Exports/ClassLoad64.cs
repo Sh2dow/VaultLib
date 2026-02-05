@@ -56,6 +56,9 @@ public class ClassLoad64 : BaseClassLoad<Key64>
 
     public override void Write(VaultWriteContext<Key64> context, BinaryWriter bw)
     {
+        Class.LayoutSize = (uint)ComputeLayoutSize();
+        Class.StaticSize = (uint)ComputeStaticSize();
+
         int collectionReserve = (from collection in context.Collections
             where collection.Class.Key == Class.Key
             select collection).Count();
@@ -212,5 +215,52 @@ public class ClassLoad64 : BaseClassLoad<Key64>
                 }
             }
         }
+    }
+
+    private int ComputeLayoutSize()
+    {
+        if (!Class.HasBaseFields)
+            return 0;
+
+        var layoutSize = 0;
+        var packingRequirement = 1;
+        foreach (var baseField in Class.BaseFields)
+        {
+            if (layoutSize % baseField.Alignment != 0)
+            {
+                layoutSize += baseField.Alignment - layoutSize % baseField.Alignment;
+            }
+
+            if ((baseField.Flags & DefinitionFlags.Array) != 0)
+            {
+                layoutSize += 8;
+                layoutSize += baseField.Size * baseField.MaxCount;
+            }
+            else
+            {
+                layoutSize += baseField.Size;
+            }
+
+            packingRequirement = Math.Max(packingRequirement, baseField.Alignment);
+        }
+
+        return (layoutSize + packingRequirement - 1) & ~(packingRequirement - 1);
+    }
+
+    private int ComputeStaticSize()
+    {
+        int staticSize = 0;
+
+        foreach (var vltClassField in Class.StaticFields)
+        {
+            if (staticSize % vltClassField.Alignment != 0)
+            {
+                staticSize += vltClassField.Alignment - staticSize % vltClassField.Alignment;
+            }
+
+            staticSize += vltClassField.Size;
+        }
+
+        return staticSize;
     }
 }
